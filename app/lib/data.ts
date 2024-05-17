@@ -9,6 +9,7 @@ import {
   Revenue,
 } from './definitions';
 import { formatCurrency } from './utils';
+import { revalidatePath } from 'next/cache';
 
 export async function fetchRevenue() {
   // Add noStore() here to prevent the response from being cached.
@@ -55,7 +56,7 @@ export async function fetchLatestInvoices() {
   }
 }
 
-export async function fetchCardData() {
+/* export async function fetchCardData() {
   try {
     // You can probably combine these into a single SQL query
     // However, we are intentionally splitting them to demonstrate
@@ -89,6 +90,7 @@ export async function fetchCardData() {
     throw new Error('Failed to fetch card data.');
   }
 }
+*/
 
 const ITEMS_PER_PAGE = 6;
 export async function fetchFilteredInvoices(

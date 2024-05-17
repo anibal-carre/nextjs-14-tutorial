@@ -2,10 +2,11 @@
 //Todas las funciones que se exportan en este archivo son de servidor, no se ejecuta ni se envia al cliente
 
 import { z } from 'zod';
-import { Invoice } from './definitions';
+import { Invoice, LatestInvoiceRaw } from '@/app/lib/definitions';
 import { sql } from '@vercel/postgres';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { formatCurrency } from '@/app/lib/utils';
 
 const CreateInvoiceSchema = z.object({
   id: z.string(),
@@ -47,4 +48,41 @@ export async function createInvoice(formData: FormData) {
 
   revalidatePath('/dashboard/invoices');
   redirect('/dashboard/invoices');
+}
+
+export async function fetchCardData() {
+  try {
+    // You can probably combine these into a single SQL query
+    // However, we are intentionally splitting them to demonstrate
+    // how to initialize multiple queries in parallel with JS.
+    const invoiceCountPromise = sql`SELECT COUNT(*) FROM invoices`;
+    const customerCountPromise = sql`SELECT COUNT(*) FROM customers`;
+    const invoiceStatusPromise = sql`SELECT
+         SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END) AS "paid",
+         SUM(CASE WHEN status = 'pending' THEN amount ELSE 0 END) AS "pending"
+         FROM invoices`;
+
+    const data = await Promise.all([
+      invoiceCountPromise,
+      customerCountPromise,
+      invoiceStatusPromise,
+    ]);
+
+    const numberOfInvoices = Number(data[0].rows[0].count ?? '0');
+    const numberOfCustomers = Number(data[1].rows[0].count ?? '0');
+    const totalPaidInvoices = formatCurrency(data[2].rows[0].paid ?? '0');
+    const totalPendingInvoices = formatCurrency(data[2].rows[0].pending ?? '0');
+
+    revalidatePath('/dashboard');
+
+    return {
+      numberOfCustomers,
+      numberOfInvoices,
+      totalPaidInvoices,
+      totalPendingInvoices,
+    };
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch card data.');
+  }
 }
