@@ -9,7 +9,6 @@ import {
   Revenue,
 } from './definitions';
 import { formatCurrency } from './utils';
-import { revalidatePath } from 'next/cache';
 
 export async function fetchRevenue() {
   // Add noStore() here to prevent the response from being cached.
@@ -20,7 +19,7 @@ export async function fetchRevenue() {
     // Don't do this in production :)
 
     // console.log('Fetching revenue data...');
-    await new Promise((resolve) => setTimeout(resolve, 3000));
+    // await new Promise((resolve) => setTimeout(resolve, 3000));
 
     const data = await sql<Revenue>`SELECT * FROM revenue`;
 
@@ -35,7 +34,7 @@ export async function fetchRevenue() {
 
 export async function fetchLatestInvoices() {
   try {
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    // await new Promise((resolve) => setTimeout(resolve, 2000));
 
     const data = await sql<LatestInvoiceRaw>`
       SELECT invoices.amount, customers.name, customers.image_url, customers.email, invoices.id
@@ -56,7 +55,7 @@ export async function fetchLatestInvoices() {
   }
 }
 
-/* export async function fetchCardData() {
+export async function fetchCardData() {
   try {
     // You can probably combine these into a single SQL query
     // However, we are intentionally splitting them to demonstrate
@@ -90,7 +89,6 @@ export async function fetchLatestInvoices() {
     throw new Error('Failed to fetch card data.');
   }
 }
-*/
 
 const ITEMS_PER_PAGE = 6;
 export async function fetchFilteredInvoices(
