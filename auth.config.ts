@@ -1,6 +1,4 @@
 import type { NextAuthConfig } from 'next-auth';
-import { signIn } from 'next-auth/react';
-import { pages } from 'next/dist/build/templates/app-page';
 
 export const authConfig = {
   pages: {
